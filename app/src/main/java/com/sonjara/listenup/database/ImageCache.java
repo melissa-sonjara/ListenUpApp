@@ -29,7 +29,7 @@ public class ImageCache
 
     public File getImageFile(int image_id)
     {
-
+        return null;
     }
 
 }

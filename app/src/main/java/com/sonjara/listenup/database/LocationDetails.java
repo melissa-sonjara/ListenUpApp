@@ -4,6 +4,8 @@ import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @DatabaseTable(tableName="location_details")
 public class LocationDetails
@@ -55,4 +57,38 @@ public class LocationDetails
 
     @DatabaseField
     public Timestamp last_modified;
+
+    public List<Service> getServices()
+    {
+        List<Service> serviceList = new ArrayList<Service>();
+
+        if (services == null || "".equals(services)) return serviceList;
+
+        String[] serviceIds = services.split(",");
+
+        for(String serviceId : serviceIds)
+        {
+            int id = Integer.parseInt(serviceId);
+            Service service = DatabaseHelper.getInstance().getService(id);
+            if (service != null)
+            {
+                serviceList.add(service);
+            }
+        }
+
+        return serviceList;
+    }
+
+    public String getServicesText()
+    {
+        List<Service> services = getServices();
+        String servicesText = new String();
+        for(Service s : services)
+        {
+            servicesText += s.name;
+            servicesText += "\n";
+        }
+
+        return servicesText;
+    }
 }

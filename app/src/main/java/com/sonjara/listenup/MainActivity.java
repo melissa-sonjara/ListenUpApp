@@ -10,6 +10,8 @@ import com.sonjara.listenup.database.DatabaseHelper;
 import com.sonjara.listenup.database.DatabaseSync;
 import com.sonjara.listenup.database.LocationDetails;
 import com.sonjara.listenup.database.Service;
+import com.sonjara.listenup.map.LocationInfoWindow;
+import com.sonjara.listenup.map.LocationMarker;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -30,7 +32,6 @@ import org.osmdroid.views.overlay.Marker;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-    private MapView mapView = null;
     private DatabaseSync syncHelper = null;
 
     public DatabaseSync getSyncHelper()
@@ -64,43 +65,6 @@ public class MainActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
-
-        mapView = findViewById(R.id.mapView);
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
-
-        //mapView.setBuiltInZoomControls(true);
-        mapView.setMultiTouchControls(true);
-
-        IMapController mapController = mapView.getController();
-        mapController.setZoom(13);
-        GeoPoint startPoint = new GeoPoint(3.53, 31.35);
-        mapController.setCenter(startPoint);
-
-        showLocations();
-    }
-
-    public void showLocations()
-    {
-        List<LocationDetails> locations = syncHelper.getDatabaseHelper().getLocations();
-
-        if (locations == null) return;
-
-        for(LocationDetails location: locations)
-        {
-            if (location.latitude.equals("") || location.longitude.equals("")) continue;
-
-            double latitude = Double.parseDouble(location.latitude);
-            double longitude = Double.parseDouble(location.longitude);
-
-            GeoPoint locationPoint = new GeoPoint(latitude, longitude);
-            Marker locationMarker = new Marker(mapView);
-            locationMarker.setPosition(locationPoint);
-            locationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            locationMarker.setIcon(null);
-            locationMarker.setTitle(location.name);
-
-            mapView.getOverlays().add(locationMarker);
-        }
     }
 
     @Override
@@ -142,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this));
-        mapView.onResume(); //needed for compass, my location overlays, v6.0.0 and up
+        //mapView.onResume(); //needed for compass, my location overlays, v6.0.0 and up
     }
 
     public void onPause(){
@@ -151,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         //if you make changes to the configuration, use
         //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         //Configuration.getInstance().save(this, prefs);
-        mapView.onPause();  //needed for compass, my location overlays, v6.0.0 and up
+        //mapView.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
 
     public void handleSyncMenuItem()

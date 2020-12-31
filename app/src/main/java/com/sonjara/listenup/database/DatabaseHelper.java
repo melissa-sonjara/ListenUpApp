@@ -21,6 +21,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
     public DatabaseHelper(Context context)
     {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        sDatabaseHelper = this;
     }
 
     @Override
@@ -87,6 +88,70 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
             return locations;
         }
         catch(SQLException e)
+        {
+            return null;
+        }
+    }
+
+    public LocationDetails getLocation(int location_id)
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<LocationDetails, Integer> dao = DaoManager.createDao(connectionSource, LocationDetails.class);
+            return dao.queryForId(location_id);
+        }
+        catch (SQLException e)
+        {
+            return null;
+        }
+    }
+
+    public List<Service> getServices()
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<Service, Integer> dao = DaoManager.createDao(connectionSource, Service.class);
+            List<Service> services = dao.queryForAll();
+
+            return services;
+        }
+        catch (SQLException e)
+        {
+            return null;
+        }
+    }
+
+    public Service getService(int service_id)
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<Service, Integer> dao = DaoManager.createDao(connectionSource, Service.class);
+            return dao.queryForId(service_id);
+        }
+        catch(SQLException e)
+        {
+            return null;
+        }
+    }
+
+    public List<AreaDetails> getAreas()
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<AreaDetails, Integer> dao = DaoManager.createDao(connectionSource, AreaDetails.class);
+            List<AreaDetails> areas = dao.queryForAll();
+
+            return areas;
+        }
+        catch (SQLException e)
         {
             return null;
         }

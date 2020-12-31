@@ -3,26 +3,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/FirstFragment">
-
+    app:startDestination="@id/mapFragment">
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="com.sonjara.listenup.SyncFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/sync_fragment">
-
+        android:id="@+id/mapFragment"
+        android:name="com.sonjara.listenup.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map">
         <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
+            android:id="@+id/action_show_location_details"
+            app:destination="@id/locationDetailsFragment"
+            app:popUpTo="@id/nav_graph" />
     </fragment>
     <fragment
-        android:id="@+id/SecondFragment"
-        android:name="com.sonjara.listenup.SecondFragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second">
-
+        android:id="@+id/locationDetailsFragment"
+        android:name="com.sonjara.listenup.LocationDetailsFragment"
+        android:label="fragment_location_details"
+        tools:layout="@layout/fragment_location_details">
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_hide_location_details"
+            app:destination="@id/mapFragment" />
+        <argument
+            android:name="location_id"
+            android:defaultValue="0"
+            app:argType="integer" />
     </fragment>
 </navigation>
