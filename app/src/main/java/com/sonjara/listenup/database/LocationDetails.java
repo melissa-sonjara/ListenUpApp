@@ -5,6 +5,8 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 @DatabaseTable(tableName="location_details")
@@ -90,5 +92,17 @@ public class LocationDetails
         }
 
         return servicesText;
+    }
+
+    public boolean hasService(String[] ids)
+    {
+        LinkedList<String> serviceIds = new LinkedList<String>(Arrays.asList(services.split(",")));
+
+        for(String id : ids)
+        {
+            if (serviceIds.contains(id)) return true;
+        }
+
+        return false;
     }
 }

@@ -55,13 +55,19 @@ public class SyncDialog extends DialogFragment implements DatabaseSync.SyncUpdat
     }
 
     @Override
-    public void onSyncUpdate(String status, int synced, int total)
+    public void onSyncUpdate(String stage, String status, int synced, int total)
     {
         if (status.equals("Completed"))
         {
-            DatabaseSync sync = ((MainActivity)getActivity()).getSyncHelper();
-            sync.setSyncUpdateListener(null);
-
+            DatabaseSync sync = ((MainActivity) getActivity()).getSyncHelper();
+            if (stage.equals("Caching Images"))
+            {
+                sync.setSyncUpdateListener(null);
+            }
+            else if (stage.equals("Syncing data"))
+            {
+                sync.cacheImages();
+            }
             getDialog().dismiss();
         }
 

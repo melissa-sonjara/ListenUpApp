@@ -1,7 +1,9 @@
 package com.sonjara.listenup;
 
+import android.content.Context;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
@@ -64,6 +66,19 @@ public class LocationDetailsFragment extends Fragment
     {
         View v = inflater.inflate(R.layout.fragment_location_details, container, false);
         return v;
+    }
+
+    /**
+     * Called when a fragment is first attached to its context.
+     * {@link #onCreate(Bundle)} will be called after this.
+     *
+     * @param context
+     */
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        ((MainActivity)getActivity()).setCurrentFragment(this);
     }
 
     @Override

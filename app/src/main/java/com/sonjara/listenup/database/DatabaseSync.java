@@ -20,13 +20,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.List;
 
 
 public class DatabaseSync
 {
     public interface SyncUpdateListener
     {
-        void onSyncUpdate(String status, int synced, int total);
+        void onSyncUpdate(String stage, String status, int synced, int total);
     }
 
     private RequestQueue m_queue = null;
@@ -38,6 +39,9 @@ public class DatabaseSync
     private Boolean syncing = false;
     private int m_tablesSynced = 0;
     private int m_tablesToSync = 0;
+
+    private int m_imagesCached = 0;
+    private int m_imageTotal = 0;
 
     private SyncUpdateListener m_syncUpdateListener = null;
 
@@ -51,6 +55,13 @@ public class DatabaseSync
     }
 
     private DatabaseHelper m_dbHelper = null;
+
+    private ImageCache m_imageCache = null;
+
+    public ImageCache getImageCache()
+    {
+        return m_imageCache;
+    }
 
     public RequestQueue getQueue()
     {
@@ -69,9 +80,10 @@ public class DatabaseSync
 
     private Gson gson;
 
-    public DatabaseSync(AppCompatActivity context, DatabaseHelper helper)
+    public DatabaseSync(AppCompatActivity context, DatabaseHelper helper, ImageCache cache)
     {
         m_dbHelper = helper;
+        m_imageCache = cache;
         m_queue = Volley.newRequestQueue(context);
         //gson = new Gson();
         gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
@@ -148,7 +160,7 @@ public class DatabaseSync
 
         if (m_syncUpdateListener != null)
         {
-            m_syncUpdateListener.onSyncUpdate("Syncing", m_tablesSynced, m_tablesToSync);
+            m_syncUpdateListener.onSyncUpdate("Syncing data", "Syncing", m_tablesSynced, m_tablesToSync);
         }
     }
 
@@ -158,7 +170,19 @@ public class DatabaseSync
         String status = (m_tablesSynced == m_tablesToSync) ? "Completed" : "Syncing";
         if (m_syncUpdateListener != null)
         {
-            m_syncUpdateListener.onSyncUpdate(status, m_tablesSynced, m_tablesToSync);
+            m_syncUpdateListener.onSyncUpdate("Syncing data", status, m_tablesSynced, m_tablesToSync);
+        }
+    }
+
+    public void cacheImages()
+    {
+        List<Service> services = m_dbHelper.getServices();
+        for(Service s: services)
+        {
+            if (s.image_id != 0)
+            {
+                m_imageCache.cacheImage(s.image_id);
+            }
         }
     }
 

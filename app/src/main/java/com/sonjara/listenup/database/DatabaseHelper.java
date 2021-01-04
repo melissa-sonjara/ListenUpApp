@@ -7,6 +7,7 @@ import com.j256.ormlite.android.apptools.OrmLiteSqliteOpenHelper;
 import com.j256.ormlite.dao.BaseDaoImpl;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
@@ -115,7 +116,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         try
         {
             Dao<Service, Integer> dao = DaoManager.createDao(connectionSource, Service.class);
-            List<Service> services = dao.queryForAll();
+            List<Service> services = dao.queryBuilder().orderBy("sort_order", true).query();
 
             return services;
         }

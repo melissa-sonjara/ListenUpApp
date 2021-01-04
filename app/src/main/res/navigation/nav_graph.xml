@@ -12,7 +12,11 @@
         <action
             android:id="@+id/action_show_location_details"
             app:destination="@id/locationDetailsFragment"
-            app:popUpTo="@id/nav_graph" />
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/wait_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/wait_anim"
+            app:popUpTo="@id/locationDetailsFragment" />
     </fragment>
     <fragment
         android:id="@+id/locationDetailsFragment"
@@ -21,7 +25,11 @@
         tools:layout="@layout/fragment_location_details">
         <action
             android:id="@+id/action_hide_location_details"
-            app:destination="@id/mapFragment" />
+            app:destination="@id/mapFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/slide_in"
+            app:popExitAnim="@anim/slide_out" />
         <argument
             android:name="location_id"
             android:defaultValue="0"

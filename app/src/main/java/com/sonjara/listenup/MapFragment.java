@@ -1,26 +1,37 @@
 package com.sonjara.listenup;
 
+import android.content.Context;
+import android.location.LocationManager;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.navigation.Navigation;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.sonjara.listenup.database.DatabaseHelper;
 import com.sonjara.listenup.database.DatabaseSyncHelper;
 import com.sonjara.listenup.database.LocationDetails;
+import com.sonjara.listenup.map.ISearchFilterable;
 import com.sonjara.listenup.map.LocationInfoWindow;
 import com.sonjara.listenup.map.LocationMarker;
 
+import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.api.IMapController;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -28,7 +39,7 @@ import java.util.List;
  * Use the {@link MapFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapFragment extends Fragment
+public class MapFragment extends Fragment implements ISearchFilterable
 {
 
     private MapView mapView = null;
@@ -43,6 +54,9 @@ public class MapFragment extends Fragment
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private MyLocationNewOverlay m_locationOverlay;
+
+    private LinkedList<LocationMarker> m_markers = new LinkedList<LocationMarker>();
 
     public MapFragment()
     {
@@ -83,6 +97,8 @@ public class MapFragment extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState)
     {
+        MainActivity activity = (MainActivity)getActivity();
+
         View v = inflater.inflate(R.layout.fragment_map, container, false);
         mapView = (MapView)v.findViewById(R.id.mapView);
 
@@ -92,22 +108,72 @@ public class MapFragment extends Fragment
         mapView.setTilesScaledToDpi(true);
 
         IMapController mapController = mapView.getController();
-        mapController.setZoom(13);
-        GeoPoint startPoint = new GeoPoint(3.53, 31.35);
-        mapController.setCenter(startPoint);
+        mapController.setZoom(activity.getMapZoomLevel());
+        mapController.setCenter(activity.getMapCenter());
 
-        MainActivity activity = (MainActivity)getActivity();
+        GpsMyLocationProvider provider = new GpsMyLocationProvider(getContext());
+        provider.addLocationSource(LocationManager.GPS_PROVIDER);
+        provider.addLocationSource(LocationManager.NETWORK_PROVIDER);
+
+        m_locationOverlay = new MyLocationNewOverlay(provider, mapView);
+        m_locationOverlay.enableMyLocation();
+        m_locationOverlay.setDrawAccuracyEnabled(true);
+
+        m_locationOverlay.runOnFirstFix(new Runnable() {
+            @Override
+            public void run() {
+                Log.i("ListenUp", "I was ran on the first fix");
+                FragmentActivity activity = getActivity();
+                if (activity != null)
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            GeoPoint myLocation = m_locationOverlay.getMyLocation();
+                            if (myLocation != null)
+                                Toast.makeText(getContext(), "GPS location acquired", Toast.LENGTH_LONG).show();
+                            else
+                                Toast.makeText(getContext(), "Unable to get GPS location at this time", Toast.LENGTH_LONG).show();
+                        }
+                    });
+
+            }
+        });
+
+        mapView.getOverlays().add(m_locationOverlay);
+
         locationIW = new LocationInfoWindow(R.layout.location_infowindow, mapView, this);
 
         showLocations();
         return v;
     }
 
+    /**
+     * Called when a fragment is first attached to its context.
+     * {@link #onCreate(Bundle)} will be called after this.
+     *
+     * @param context
+     */
+    @Override
+    public void onAttach(@NonNull Context context)
+    {
+        super.onAttach(context);
+        ((MainActivity)getActivity()).setCurrentFragment(this);
+    }
+
+    public void clearLocations()
+    {
+        for(LocationMarker marker : m_markers)
+        {
+            mapView.getOverlays().remove(marker);
+        }
+
+        m_markers = new LinkedList<LocationMarker>();
+    }
+
     public void showLocations()
     {
-        DatabaseHelper db = DatabaseHelper.getInstance();
-
-        List<LocationDetails> locations = db.getLocations();
+        MainActivity activity = (MainActivity)getActivity();
+        List<LocationDetails> locations = activity.getFilteredLocations();
 
         if (locations == null) return;
 
@@ -119,7 +185,7 @@ public class MapFragment extends Fragment
             double longitude = Double.parseDouble(location.longitude);
 
             GeoPoint locationPoint = new GeoPoint(latitude, longitude);
-            Marker locationMarker = new LocationMarker(mapView, location);
+            LocationMarker locationMarker = new LocationMarker(mapView, location);
             locationMarker.setIcon(this.getResources().getDrawable(R.drawable.listenup_marker));
             locationMarker.setPosition(locationPoint);
             locationMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
@@ -127,15 +193,42 @@ public class MapFragment extends Fragment
             locationMarker.setTitle(location.name);
             locationMarker.setInfoWindow(locationIW);
 
+            m_markers.add(locationMarker);
             mapView.getOverlays().add(locationMarker);
         }
     }
 
     public void handleLocationDetails(LocationDetails location)
     {
+        double currentZoom = mapView.getZoomLevelDouble();
+        GeoPoint currentPoint = (GeoPoint)mapView.getMapCenter();
+        MainActivity activity = (MainActivity)getActivity();
+        activity.setMapZoomLevel(currentZoom);
+        activity.setMapCenter(currentPoint);
         MapFragmentDirections.ActionShowLocationDetails action = MapFragmentDirections.actionShowLocationDetails();
         action.setLocationId(location.location_id);
         Navigation.findNavController(getView()).navigate(action);
     }
 
+    public void centerOnCurrentLocation()
+    {
+        GeoPoint currentLocation = m_locationOverlay.getMyLocation();
+        if (currentLocation != null)
+        {
+            IMapController controller = mapView.getController();
+            controller.animateTo(currentLocation);
+        }
+        else
+        {
+            Toast.makeText(getContext(), "We are having trouble getting a GPS fix. Please check your app permissions if this keeps happening, and ensure that Location Services are enabled", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    public void reapplyFilter()
+    {
+        clearLocations();
+        showLocations();
+        mapView.refreshDrawableState();
+    }
 }

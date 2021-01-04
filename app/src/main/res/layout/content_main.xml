@@ -8,7 +8,7 @@
 
 
 
-    <fragment
+    <!--<fragment
         android:id="@+id/locationDetails"
         android:name="com.sonjara.listenup.LocationDetailsFragment"
         android:layout_width="fill_parent"
@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:layout="@+id/fragment_location_details"
-        />
+        />-->
 
     <fragment
         android:id="@+id/nav_host_fragment"

@@ -2,12 +2,32 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.sonjara.listenup.MainActivity">
-    <item android:id="@+id/sync"
+    <item
+        android:id="@+id/menu_item_search"
+        android:icon="@drawable/ic_search"
+        android:title="Search"
+        app:showAsAction="always|withText" />
+    <item
+        android:icon="@drawable/ic_list"
+        android:title="Service Location List"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_item_recenter"
+        android:icon="@drawable/ic_my_location"
+        android:title="Go To My Location"
+        app:showAsAction="always|withText" />
+    <item
+        android:id="@+id/sync"
+        android:icon="@android:drawable/ic_popup_sync"
+        android:orderInCategory="99"
         android:title="@string/sync"
-        android:orderInCategory="99"/>
+        app:showAsAction="always|collapseActionView|withText" />
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_item_about"
+        android:title="About" />
 </menu>
