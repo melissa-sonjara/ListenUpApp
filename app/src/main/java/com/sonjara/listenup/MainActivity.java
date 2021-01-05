@@ -18,6 +18,7 @@ import com.sonjara.listenup.map.LocationMarker;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.preference.PreferenceManager;
@@ -170,12 +171,27 @@ public class MainActivity extends AppCompatActivity {
 
                 return true;
 
+            case R.id.menu_item_about:
+
+                handleShowAbout();
+                return true;
+
             default:
 
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void handleShowAbout()
+    {
+        Fragment fragment = getCurrentFragment();
+        if (fragment instanceof MapFragment)
+        {
+            MapFragmentDirections.ActionShowAbout action = MapFragmentDirections.actionShowAbout();
+            Navigation.findNavController(fragment.getView()).navigate(action);
+        }
     }
 
     public void onResume(){
@@ -231,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
         DatabaseHelper dbHelper = DatabaseHelper.getInstance();
         List<LocationDetails> unfilteredLocations = dbHelper.getLocations();
 
-        LinkedList<LocationDetails> filtered = new LinkedList<LocationDetails>();
+        LinkedList<LocationDetails> filtered = new LinkedList<>();
 
         String nameFilter = getLocationNameFilter();
 
@@ -251,4 +267,5 @@ public class MainActivity extends AppCompatActivity {
 
         return filtered;
     }
+
 }

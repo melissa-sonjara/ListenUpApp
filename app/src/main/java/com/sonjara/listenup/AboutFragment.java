@@ -1,12 +1,16 @@
 package com.sonjara.listenup;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -16,6 +20,9 @@ import android.view.ViewGroup;
 public class AboutFragment extends Fragment
 {
 
+
+    private Button m_goToWebsite;
+    private Button m_dismissButton;
 
     public AboutFragment()
     {
@@ -30,8 +37,7 @@ public class AboutFragment extends Fragment
     // TODO: Rename and change types and number of parameters
     public static AboutFragment newInstance()
     {
-        AboutFragment fragment = new AboutFragment();
-        return fragment;
+        return new AboutFragment();
     }
 
     @Override
@@ -45,6 +51,34 @@ public class AboutFragment extends Fragment
                              Bundle savedInstanceState)
     {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_about, container, false);
+        View v = inflater.inflate(R.layout.fragment_about, container, false);
+        m_goToWebsite = (Button)v.findViewById(R.id.go_to_website);
+        m_dismissButton = (Button)v.findViewById(R.id.dismiss_about);
+
+        m_goToWebsite.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                Intent Getintent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://listenup.sonjara.com"));
+                startActivity(Getintent);
+
+            }
+        });
+
+        m_dismissButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                View parent = getView();
+                if (parent != null)
+                {
+                    AboutFragmentDirections.ActionHideAbout action = AboutFragmentDirections.actionHideAbout();
+                    Navigation.findNavController(parent).navigate(action);
+                }
+            }
+        });
+        return v;
     }
 }

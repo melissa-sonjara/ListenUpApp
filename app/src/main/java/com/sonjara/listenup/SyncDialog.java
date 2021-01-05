@@ -66,7 +66,8 @@ public class SyncDialog extends DialogFragment implements DatabaseSync.SyncUpdat
             }
             else if (stage.equals("Syncing data"))
             {
-                sync.cacheImages();
+                sync.setSyncUpdateListener(null);
+               // sync.cacheImages();
             }
             getDialog().dismiss();
         }

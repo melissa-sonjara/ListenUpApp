@@ -62,7 +62,7 @@ public class LocationDetails
 
     public List<Service> getServices()
     {
-        List<Service> serviceList = new ArrayList<Service>();
+        List<Service> serviceList = new ArrayList<>();
 
         if (services == null || "".equals(services)) return serviceList;
 
@@ -84,7 +84,7 @@ public class LocationDetails
     public String getServicesText()
     {
         List<Service> services = getServices();
-        String servicesText = new String();
+        String servicesText = "";
         for(Service s : services)
         {
             servicesText += s.name;
@@ -96,7 +96,10 @@ public class LocationDetails
 
     public boolean hasService(String[] ids)
     {
-        LinkedList<String> serviceIds = new LinkedList<String>(Arrays.asList(services.split(",")));
+        // Empty filter always matches
+        if (ids.length == 1 && "".equals(ids[0])) return true;
+
+        LinkedList<String> serviceIds = new LinkedList<>(Arrays.asList(services.split(",")));
 
         for(String id : ids)
         {

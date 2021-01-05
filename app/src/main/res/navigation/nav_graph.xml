@@ -17,6 +17,13 @@
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/wait_anim"
             app:popUpTo="@id/locationDetailsFragment" />
+        <action
+            android:id="@+id/action_show_about"
+            app:destination="@id/aboutFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/wait_anim"
+            app:popEnterAnim="@anim/fade_in"
+            app:popExitAnim="@anim/wait_anim" />
     </fragment>
     <fragment
         android:id="@+id/locationDetailsFragment"
@@ -34,5 +41,18 @@
             android:name="location_id"
             android:defaultValue="0"
             app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/aboutFragment"
+        android:name="com.sonjara.listenup.AboutFragment"
+        android:label="fragment_about"
+        tools:layout="@layout/fragment_about" >
+        <action
+            android:id="@+id/action_hide_about"
+            app:destination="@id/mapFragment"
+            app:enterAnim="@anim/slide_in"
+            app:exitAnim="@anim/slide_out"
+            app:popEnterAnim="@anim/slide_in"
+            app:popExitAnim="@anim/slide_out" />
     </fragment>
 </navigation>
