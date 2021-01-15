@@ -1,9 +1,11 @@
 package com.sonjara.listenup;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
@@ -71,11 +73,22 @@ public class AboutFragment extends Fragment
             @Override
             public void onClick(View v) {
 
+                MainActivity activity = (MainActivity)getActivity();
+                Fragment fragment = activity.getCurrentFragment();
                 View parent = getView();
                 if (parent != null)
                 {
-                    AboutFragmentDirections.ActionHideAbout action = AboutFragmentDirections.actionHideAbout();
-                    Navigation.findNavController(parent).navigate(action);
+                    if (fragment instanceof MapFragment)
+                    {
+                        AboutFragmentDirections.ActionHideAbout action = AboutFragmentDirections.actionHideAbout();
+                        Navigation.findNavController(parent).navigate(action);
+                    }
+                    else if (fragment instanceof LocationListFragment)
+                    {
+                        AboutFragmentDirections.AboutHideToList action = AboutFragmentDirections.aboutHideToList();
+                        Navigation.findNavController(parent).navigate(action);
+
+                    }
                 }
             }
         });

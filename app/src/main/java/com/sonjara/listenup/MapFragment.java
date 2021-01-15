@@ -157,7 +157,7 @@ public class MapFragment extends Fragment implements ISearchFilterable
     public void onAttach(@NonNull Context context)
     {
         super.onAttach(context);
-        ((MainActivity)getActivity()).setCurrentFragment(this);
+        ((MainActivity)getActivity()).fragmentAttached(this);
     }
 
     public void clearLocations()
@@ -230,5 +230,30 @@ public class MapFragment extends Fragment implements ISearchFilterable
         clearLocations();
         showLocations();
         mapView.refreshDrawableState();
+    }
+
+    /**
+     * Called when the Fragment is no longer resumed.  This is generally
+     * tied to {@link Activity#onPause() Activity.onPause} of the containing
+     * Activity's lifecycle.
+     */
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This is generally
+     * tied to {@link Activity#onResume() Activity.onResume} of the containing
+     * Activity's lifecycle.
+     */
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        mapView.onResume();
     }
 }

@@ -2,6 +2,8 @@ package com.sonjara.listenup;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -10,37 +12,35 @@ import com.sonjara.listenup.database.DatabaseHelper;
 import com.sonjara.listenup.database.DatabaseSync;
 import com.sonjara.listenup.database.ImageCache;
 import com.sonjara.listenup.database.LocationDetails;
-import com.sonjara.listenup.database.Service;
 import com.sonjara.listenup.map.ISearchFilterable;
-import com.sonjara.listenup.map.LocationInfoWindow;
-import com.sonjara.listenup.map.LocationMarker;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
-import androidx.navigation.fragment.NavHostFragment;
 
-import android.preference.PreferenceManager;
 import android.view.View;
 
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
-import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
+
     private DatabaseSync syncHelper = null;
     private ImageCache m_imageCache = null;
+
+    private IssueViewModel m_issueViewModel;
 
     private double m_mapZoomLevel = 13.0;
     private GeoPoint m_mapCenter = new GeoPoint(3.53, 31.35);
@@ -48,6 +48,20 @@ public class MainActivity extends AppCompatActivity {
 
     private String m_serviceFilter = "";
     private String m_locationNameFilter = "";
+
+    private FloatingActionButton m_issueButton;
+
+    private Menu m_menu = null;
+
+    public Menu getMenu()
+    {
+        return m_menu;
+    }
+
+    private void setMenu(Menu menu)
+    {
+        m_menu = menu;
+    }
 
     public String getServiceFilter()
     {
@@ -127,20 +141,40 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        final MainActivity me = this;
+
+        m_issueViewModel = new ViewModelProvider(this).get(IssueViewModel.class);
+
+        m_issueButton = findViewById(R.id.fab);
+        m_issueButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Navigation.findNavController(me, R.id.nav_host_fragment).navigate(R.id.action_global_issue_list);
+                hideIssueButton();
             }
         });
+
+        if (getLastSyncTime() == null)
+        {
+            handleSyncMenuItem();
+        }
+    }
+
+    public void hideIssueButton()
+    {
+        m_issueButton.hide();
+    }
+
+    public void showIssueButton()
+    {
+        m_issueButton.show();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        setMenu(menu);
         return true;
     }
 
@@ -169,11 +203,24 @@ public class MainActivity extends AppCompatActivity {
 
             case R.id.action_settings:
 
+                handleSettingsDialog();
+                return true;
+
+            case R.id.menu_item_location_list:
+                handleShowLocationList();
+                return true;
+
+            case R.id.menu_item_map:
+                handleShowMap();
                 return true;
 
             case R.id.menu_item_about:
 
                 handleShowAbout();
+                return true;
+
+            case R.id.menu_item_website:
+                handleGoToWebsite();
                 return true;
 
             default:
@@ -184,14 +231,35 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void handleGoToWebsite()
+    {
+        Intent Getintent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://listenup.sonjara.com"));
+        startActivity(Getintent);
+    }
+
+    private void handleSettingsDialog()
+    {
+        SettingsDialog dialog = new SettingsDialog();
+        dialog.show(this.getSupportFragmentManager(), "SettingsDialog");
+    }
+
+    private void handleShowMap()
+    {
+        Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.action_global_show_map);
+        showIssueButton();
+
+    }
+
+    private void handleShowLocationList()
+    {
+
+        Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.action_global_show_location_list);
+        showIssueButton();
+    }
+
     private void handleShowAbout()
     {
-        Fragment fragment = getCurrentFragment();
-        if (fragment instanceof MapFragment)
-        {
-            MapFragmentDirections.ActionShowAbout action = MapFragmentDirections.actionShowAbout();
-            Navigation.findNavController(fragment.getView()).navigate(action);
-        }
+        Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.action_global_show_about);
     }
 
     public void onResume(){
@@ -224,6 +292,86 @@ public class MainActivity extends AppCompatActivity {
         dialog.show(this.getSupportFragmentManager(), "SearchDialog");
     }
 
+    public void handleLogin()
+    {
+        LoginDialog dialog = new LoginDialog();
+        dialog.show(this.getSupportFragmentManager(), "LoginDialog");
+    }
+
+    public void showLoginDialog()
+    {
+        LoginDialog dialog = new LoginDialog();
+        dialog.show(this.getSupportFragmentManager(), "LoginDialog");
+    }
+
+    public String getToken()
+    {
+        return getPreferences(Context.MODE_PRIVATE).getString("token", null);
+    }
+
+    public Date getTokenExpiry()
+    {
+        String dateStr = getPreferences(Context.MODE_PRIVATE).getString("token_expiry", null);
+        if (dateStr == null) return null;
+
+        SimpleDateFormat sdf = new SimpleDateFormat(MainActivity.DATE_PATTERN);
+        try
+        {
+            Date d = sdf.parse(dateStr);
+            return d;
+        }
+        catch (ParseException e)
+        {
+            return null;
+        }
+    }
+
+    public void setToken(String token, Date expiry)
+    {
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("token", token);
+
+        if (expiry != null)
+        {
+            SimpleDateFormat sdf = new SimpleDateFormat(MainActivity.DATE_PATTERN);
+
+            String dateStr = sdf.format(expiry);
+            editor.putString("token_expiry", dateStr);
+        }
+        editor.apply();
+    }
+
+    public Date getLastSyncTime()
+    {
+        String dateStr = getPreferences(Context.MODE_PRIVATE).getString("last_sync", null);
+        if (dateStr == null) return null;
+
+        SimpleDateFormat sdf = new SimpleDateFormat(MainActivity.DATE_PATTERN);
+        try
+        {
+            Date d = sdf.parse(dateStr);
+            return d;
+        }
+        catch (ParseException e)
+        {
+            return null;
+        }
+    }
+
+    public void setLastSyncTime(Date date)
+    {
+
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        SimpleDateFormat sdf = new SimpleDateFormat(MainActivity.DATE_PATTERN);
+
+        String dateStr = sdf.format(date);
+        editor.putString("last_sync", dateStr);
+        editor.apply();
+    }
+
     public void handleGoToCurrentLocation()
     {
        Fragment fragment = getCurrentFragment();
@@ -231,6 +379,25 @@ public class MainActivity extends AppCompatActivity {
        {
            ((MapFragment)fragment).centerOnCurrentLocation();
        }
+    }
+
+    public void fragmentAttached(Fragment fragment)
+    {
+        Menu menu = getMenu();
+        setCurrentFragment(fragment);
+        if (menu != null)
+        {
+            if (fragment instanceof MapFragment)
+            {
+                menu.findItem(R.id.menu_item_map).setVisible(false);
+                menu.findItem(R.id.menu_item_location_list).setVisible(true);
+            }
+            else if (fragment instanceof LocationListFragment)
+            {
+                menu.findItem(R.id.menu_item_map).setVisible(true);
+                menu.findItem(R.id.menu_item_location_list).setVisible(false);
+            }
+        }
     }
 
     public void applyFilter()
@@ -249,7 +416,9 @@ public class MainActivity extends AppCompatActivity {
 
         LinkedList<LocationDetails> filtered = new LinkedList<>();
 
-        String nameFilter = getLocationNameFilter();
+        if (unfilteredLocations == null) return filtered;
+
+        String nameFilter = getLocationNameFilter().toLowerCase();
 
         String[] serviceIds = getServiceFilter().split(",");
 
@@ -257,7 +426,8 @@ public class MainActivity extends AppCompatActivity {
         {
             if (!"".equals(nameFilter))
             {
-                if (!location.name.contains(nameFilter)) continue;
+                if (!location.name.toLowerCase().contains(nameFilter) &&
+                    !location.address.toLowerCase().contains(nameFilter)) continue;
             }
 
             if (serviceIds.length > 0 && !location.hasService(serviceIds)) continue;

@@ -5,8 +5,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.sonjara.listenup.database.LocationDetails;
 import com.sonjara.listenup.dummy.DummyContent.DummyItem;
 
 import java.util.List;
@@ -17,12 +19,53 @@ import java.util.List;
  */
 public class LocationDetailsViewAdapter extends RecyclerView.Adapter<LocationDetailsViewAdapter.ViewHolder>
 {
-
-    private final List<DummyItem> mValues;
-
-    public LocationDetailsViewAdapter(List<DummyItem> items)
+    public interface OnShowMapLocation
     {
-        mValues = items;
+        public void OnShowMapLocation(LocationDetails location);
+    }
+
+    public interface OnShowLocationDetails
+    {
+        public void OnShowLocationDetails(LocationDetails location);
+    }
+
+    private OnShowMapLocation m_onShowMapLocation = null;
+    private OnShowLocationDetails m_onShowLocationDetails = null;
+
+    public OnShowMapLocation getOnShowMapLocation()
+    {
+        return m_onShowMapLocation;
+    }
+
+    public void setOnShowMapLocation(OnShowMapLocation onShowMapLocationHandler)
+    {
+        m_onShowMapLocation = onShowMapLocationHandler;
+    }
+
+    public OnShowLocationDetails getOnShowLocationDetails()
+    {
+        return m_onShowLocationDetails;
+    }
+
+    public void setOnShowLocationDetails(OnShowLocationDetails onShowLocationDetails)
+    {
+        m_onShowLocationDetails = onShowLocationDetails;
+    }
+
+    private List<LocationDetails> m_locations;
+
+    public List<LocationDetails> getLocations()
+    {
+        return m_locations;
+    }
+
+    public void setLocations(List<LocationDetails> locations)
+    {
+        m_locations = locations;
+    }
+    public LocationDetailsViewAdapter(List<LocationDetails> items)
+    {
+        m_locations = items;
     }
 
     @Override
@@ -36,36 +79,68 @@ public class LocationDetailsViewAdapter extends RecyclerView.Adapter<LocationDet
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position)
     {
-        holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-        holder.mContentView.setText(mValues.get(position).content);
+        holder.m_location = m_locations.get(position);
+        holder.m_name.setText(m_locations.get(position).name);
+        holder.m_address.setText(m_locations.get(position).address);
+        holder.getView().setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                OnShowLocationDetails handler = getOnShowLocationDetails();
+                if (handler != null)
+                {
+                    handler.OnShowLocationDetails(holder.m_location);
+                }
+            }
+        });
+
+        holder.m_markerIcon.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                OnShowMapLocation handler = getOnShowMapLocation();
+                if (handler != null)
+                {
+                    handler.OnShowMapLocation(holder.m_location);
+                }
+            }
+        });
     }
 
     @Override
     public int getItemCount()
     {
-        return mValues.size();
+        return m_locations.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder
     {
-        public final View mView;
-        public final TextView mIdView;
-        public final TextView mContentView;
-        public DummyItem mItem;
+        public final View m_view;
+        public final ImageView m_markerIcon;
+        public final TextView m_name;
+        public final TextView m_address;
+        public LocationDetails m_location;
 
         public ViewHolder(View view)
         {
             super(view);
-            mView = view;
-            mIdView = (TextView) view.findViewById(R.id.item_number);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            m_view = view;
+            m_markerIcon = (ImageView) view.findViewById(R.id.location_marker_icon);
+            m_name = (TextView) view.findViewById(R.id.location_name);
+            m_address = (TextView) view.findViewById(R.id.location_address);
+        }
+
+        public View getView()
+        {
+            return m_view;
         }
 
         @Override
         public String toString()
         {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + m_name.getText() + "'";
         }
     }
 }

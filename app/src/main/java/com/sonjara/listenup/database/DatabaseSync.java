@@ -15,11 +15,15 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sonjara.listenup.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 
@@ -30,12 +34,20 @@ public class DatabaseSync
         void onSyncUpdate(String stage, String status, int synced, int total);
     }
 
+    public static final int LOGIN_SUCCESS = 1;
+    public static final int LOGIN_ERROR = 0;
+
+    public interface LoginResultListener
+    {
+        void onLoginResult(int status, String message);
+    }
+
+    private MainActivity m_activity;
+
     private RequestQueue m_queue = null;
     private String m_url = "https://listenup.sonjara.com/api/";
     private String token = null;
 
-    private String username = "admin";
-    private String password = "Xcoria8192!";
     private Boolean syncing = false;
     private int m_tablesSynced = 0;
     private int m_tablesToSync = 0;
@@ -49,6 +61,19 @@ public class DatabaseSync
     {
         m_syncUpdateListener = listener;
     }
+
+    public LoginResultListener getLoginResultListener()
+    {
+        return m_loginResultListener;
+    }
+
+    public void setLoginResultListener(LoginResultListener loginResultListener)
+    {
+        m_loginResultListener = loginResultListener;
+    }
+
+    private LoginResultListener m_loginResultListener = null;
+
     public DatabaseHelper getDatabaseHelper()
     {
         return m_dbHelper;
@@ -80,16 +105,31 @@ public class DatabaseSync
 
     private Gson gson;
 
-    public DatabaseSync(AppCompatActivity context, DatabaseHelper helper, ImageCache cache)
+    public DatabaseSync(MainActivity activity, DatabaseHelper helper, ImageCache cache)
     {
+        m_activity = activity;
         m_dbHelper = helper;
         m_imageCache = cache;
-        m_queue = Volley.newRequestQueue(context);
+        m_queue = Volley.newRequestQueue(activity.getApplicationContext());
         //gson = new Gson();
         gson = new GsonBuilder().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     }
 
     public void authenticate()
+    {
+        token = m_activity.getToken();
+
+        if (token == null)
+        {
+            m_activity.handleLogin();
+        }
+        else
+        {
+            if (syncing) doSync();
+        }
+    }
+
+    public void login(String username, String password)
     {
         String url = m_url + "authenticate?username=" + username + "&password=" + password;
 
@@ -99,10 +139,35 @@ public class DatabaseSync
                 Log.v("ListenUp", response.toString());
                 try
                 {
-                    token = response.getJSONObject("result").getString("token");
-                    if (syncing) doSync();
-                } catch (JSONException e)
+                    JSONObject result =response.getJSONObject("result");
+                    token = result.getString("token");
+                    Date expiry = null;
+                    String expiryStr = result.getString("expiry_date");
+                    if (!"".equals(expiryStr))
+                    {
+                        SimpleDateFormat sdf = new SimpleDateFormat(MainActivity.DATE_PATTERN);
+                        try
+                        {
+                            expiry = sdf.parse(expiryStr);
+                        }
+                        catch(ParseException e)
+                        {
+                            Log.e("ListenUp", "Invalid date format: " + expiryStr);
+                        }
+                    }
+                    m_activity.setToken(token, expiry);
+
+                    if (m_loginResultListener != null)
+                    {
+                        m_loginResultListener.onLoginResult(LOGIN_SUCCESS, "");
+                    }
+                }
+                catch (JSONException e)
                 {
+                    if (m_loginResultListener != null)
+                    {
+                        m_loginResultListener.onLoginResult(LOGIN_ERROR, "Incorrect email or password");
+                    }
                     e.printStackTrace();
                 }
             }
@@ -112,6 +177,7 @@ public class DatabaseSync
             public void onErrorResponse(VolleyError error)
             {
                Log.v("ListenUp", error.getMessage());
+               m_loginResultListener.onLoginResult(LOGIN_ERROR, error.getMessage());
             }
         });
 
@@ -132,6 +198,11 @@ public class DatabaseSync
         syncTable(new DatabaseSyncHelper<Service, Service[]>(this, Service.class, Service[].class, "service", ""));
         syncTable(new DatabaseSyncHelper<AreaDetails, AreaDetails[]>(this, AreaDetails.class, AreaDetails[].class, "area_details", ""));
         syncTable(new DatabaseSyncHelper<LocationDetails, LocationDetails[]>(this, LocationDetails.class, LocationDetails[].class, "location_details", ""));
+        syncTable(new DatabaseSyncHelper<IssueType, IssueType[]>(this, IssueType.class, IssueType[].class, "issue_type", ""));
+        syncTable(new DatabaseSyncHelper<SubIssueType, SubIssueType[]>(this, SubIssueType.class, SubIssueType[].class, "sub_issue_type", ""));
+        syncTable(new DatabaseSyncHelper<SafetyIssueSource, SafetyIssueSource[]>(this, SafetyIssueSource.class, SafetyIssueSource[].class, "issue_source", ""));
+        syncTable(new DatabaseSyncHelper<IssueEvidence, IssueEvidence[]>(this, IssueEvidence.class, IssueEvidence[].class, "issue_evidence", ""));
+        syncTable(new DatabaseSyncHelper<CampService, CampService[]>(this, CampService.class, CampService[].class, "camp_service", ""));
     }
 
     public void syncTable(DatabaseSyncHelper target)
@@ -172,6 +243,14 @@ public class DatabaseSync
         {
             m_syncUpdateListener.onSyncUpdate("Syncing data", status, m_tablesSynced, m_tablesToSync);
         }
+    }
+
+    public void submitIssue(Issue issue)
+    {
+        if (issue == null || issue.status != "Pending") return;
+
+        String json = new Gson().toJson(issue);
+
     }
 
     public void cacheImages()

@@ -3,4 +3,7 @@
     <color name="colorPrimary">#007C97</color>
     <color name="colorPrimaryDark">#013a54</color>
     <color name="colorAccent">#F45958</color>
+    <color name="in_progress">#666666</color>
+    <color name="pending">#304FFE</color>
+    <color name="submitted">#0E4E28</color>
 </resources>

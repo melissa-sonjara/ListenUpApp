@@ -15,6 +15,9 @@ import androidx.fragment.app.DialogFragment;
 
 import com.sonjara.listenup.database.DatabaseSync;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class SyncDialog extends DialogFragment implements DatabaseSync.SyncUpdateListener
 {
     // widgets
@@ -69,6 +72,11 @@ public class SyncDialog extends DialogFragment implements DatabaseSync.SyncUpdat
                 sync.setSyncUpdateListener(null);
                // sync.cacheImages();
             }
+
+            MainActivity activity = (MainActivity)getActivity();
+            Date now = new Date();
+            activity.setLastSyncTime(now);
+            activity.applyFilter();
             getDialog().dismiss();
         }
 

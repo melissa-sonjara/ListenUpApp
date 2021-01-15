@@ -24,6 +24,9 @@
             app:exitAnim="@anim/wait_anim"
             app:popEnterAnim="@anim/fade_in"
             app:popExitAnim="@anim/wait_anim" />
+        <action
+            android:id="@+id/action_show_location_list"
+            app:destination="@id/locationListFragment" />
     </fragment>
     <fragment
         android:id="@+id/locationDetailsFragment"
@@ -41,6 +44,9 @@
             android:name="location_id"
             android:defaultValue="0"
             app:argType="integer" />
+        <action
+            android:id="@+id/action_locationDetailsFragment_to_locationListFragment"
+            app:destination="@id/locationListFragment" />
     </fragment>
     <fragment
         android:id="@+id/aboutFragment"
@@ -54,5 +60,93 @@
             app:exitAnim="@anim/slide_out"
             app:popEnterAnim="@anim/slide_in"
             app:popExitAnim="@anim/slide_out" />
+        <action
+            android:id="@+id/about_hide_to_list"
+            app:destination="@id/locationListFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
     </fragment>
+    <fragment
+        android:id="@+id/locationListFragment"
+        android:name="com.sonjara.listenup.LocationListFragment"
+        android:label="fragment_location_list_list"
+        tools:layout="@layout/fragment_location_list_list" >
+        <action
+            android:id="@+id/action_show_map"
+            app:destination="@id/mapFragment" />
+        <action
+            android:id="@+id/show_location_details"
+            app:destination="@id/locationDetailsFragment" />
+        <action
+            android:id="@+id/list_action_show_about"
+            app:destination="@id/aboutFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/fade_out" />
+    </fragment>
+    <fragment
+        android:id="@+id/issueListFragment"
+        android:name="com.sonjara.listenup.IssueListFragment"
+        android:label="fragment_issue_list"
+        tools:layout="@layout/fragment_issue_list" >
+        <action
+            android:id="@+id/showIssueForm"
+            app:destination="@id/issueFormFragment"
+            app:enterAnim="@anim/fade_in"
+            app:exitAnim="@anim/wait_anim" />
+    </fragment>
+    <action
+        android:id="@+id/action_global_issue_list"
+        app:destination="@id/issueListFragment"
+        app:enterAnim="@anim/slide_in"
+        app:exitAnim="@anim/wait_anim" />
+    <fragment
+        android:id="@+id/issueFormFragment"
+        android:name="com.sonjara.listenup.IssueFormFragment"
+        android:label="fragment_issue_form"
+        tools:layout="@layout/fragment_issue_form" >
+        <action
+            android:id="@+id/hideIssueForm"
+            app:destination="@id/issueListFragment" />
+        <action
+            android:id="@+id/action_issue_form_next"
+            app:destination="@id/issueForm2Fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/issueForm2Fragment"
+        android:name="com.sonjara.listenup.IssueForm2Fragment"
+        android:label="fragment_issue_form_2"
+        tools:layout="@layout/fragment_issue_form_2" >
+        <action
+            android:id="@+id/action_issue_form_2_prev"
+            app:destination="@id/issueFormFragment" />
+        <action
+            android:id="@+id/action_issue_form_2_next"
+            app:destination="@id/issueForm3Fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/issueForm3Fragment"
+        android:name="com.sonjara.listenup.IssueForm3Fragment"
+        android:label="fragment_issue_form_3"
+        tools:layout="@layout/fragment_issue_form_3" >
+        <action
+            android:id="@+id/action_issue_form_3_prev"
+            app:destination="@id/issueForm2Fragment" />
+        <action
+            android:id="@+id/action_issue_form_3_next"
+            app:destination="@id/issueForm4Fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/issueForm4Fragment"
+        android:name="com.sonjara.listenup.IssueForm4Fragment"
+        android:label="IssueForm4Fragment" >
+        <action
+            android:id="@+id/action_issue_form_4_prev"
+            app:destination="@id/issueForm3Fragment" />
+        <action
+            android:id="@+id/action_issue_form_4_complete"
+            app:destination="@id/issueListFragment" />
+    </fragment>
+    <action android:id="@+id/action_global_show_map" app:destination="@id/mapFragment" />
+    <action android:id="@+id/action_global_show_about" app:destination="@id/aboutFragment" />
+    <action android:id="@+id/action_global_show_location_list" app:destination="@id/locationListFragment" />
 </navigation>

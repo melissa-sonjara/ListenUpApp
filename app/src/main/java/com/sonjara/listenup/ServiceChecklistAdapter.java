@@ -13,14 +13,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.sonjara.listenup.database.DatabaseHelper;
-import com.sonjara.listenup.database.DatabaseSync;
 import com.sonjara.listenup.database.ImageCache;
 import com.sonjara.listenup.database.Service;
 
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.StringJoiner;
 
 public class ServiceChecklistAdapter extends RecyclerView.Adapter
 {
@@ -74,7 +72,7 @@ public class ServiceChecklistAdapter extends RecyclerView.Adapter
         {
             super(itemView);
             m_imageView = (ImageView)itemView.findViewById(R.id.service_image);
-            m_serviceLabel = (TextView)itemView.findViewById(R.id.service_name);
+            m_serviceLabel = (TextView)itemView.findViewById(R.id.evidence_name);
             m_checkbox = (CheckBox)itemView.findViewById(R.id.service_checkbox);
         }
     }

@@ -101,7 +101,7 @@ public class LocationDetailsFragment extends Fragment
             TextView hoursOfOperation = v.findViewById(R.id.hours_of_operation);
             TextView contactName = v.findViewById(R.id.contact_name);
             TextView contactPhoneTitle = v.findViewById(R.id.contact_phone_title);
-            Button contactPhone = v.findViewById(R.id.contact_phone_number);
+            TextView contactPhone = v.findViewById(R.id.contact_phone_number);
             TextView notes = v.findViewById(R.id.location_notes);
 
             Button closeButton = v.findViewById(R.id.location_details_close_button);
