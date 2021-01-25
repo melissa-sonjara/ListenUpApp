@@ -141,12 +141,6 @@ public class IssueForm3Fragment extends Fragment
         return view;
     }
 
-    /**
-     * Called when the fragment is visible to the user and actively running.
-     * This is generally
-     * tied to {@link Activity#onResume() Activity.onResume} of the containing
-     * Activity's lifecycle.
-     */
     @Override
     public void onResume()
     {
@@ -160,7 +154,7 @@ public class IssueForm3Fragment extends Fragment
         Issue issue = issueViewModel.getIssue();
         m_issueSolution.setText(issue.recommendation);
 
-        m_campServiceChecklistAdapter.setCampServiceIds(issue.camp_services);
+        m_campServiceChecklistAdapter.setCampServiceIds(issue.related_services);
     }
 
 
@@ -200,7 +194,7 @@ public class IssueForm3Fragment extends Fragment
         IssueViewModel issueViewModel = new ViewModelProvider(getActivity()).get(IssueViewModel.class);
         Issue issue = issueViewModel.getIssue();
         issue.recommendation = m_issueSolution.getText().toString();
-        issue.camp_services = m_campServiceChecklistAdapter.getCampServiceIdsAsString();
+        issue.related_services = m_campServiceChecklistAdapter.getCampServiceIdsAsString();
 
         db.saveIssue(issue);
     }

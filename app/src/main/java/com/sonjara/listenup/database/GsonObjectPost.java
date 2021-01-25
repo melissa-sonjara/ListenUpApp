@@ -10,6 +10,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class GsonObjectPost<S, T> extends Request<T>
 {
@@ -17,15 +19,34 @@ public class GsonObjectPost<S, T> extends Request<T>
     private final Class<T> m_responseClass;
     private final Response.Listener<T> m_listener;
 
+    private final Map<String, String> m_params;
+
     public GsonObjectPost(Gson gson, String url, S payload, Class<T> responseClass, Response.Listener<T> l, Response.ErrorListener errorListener) throws AuthFailureError
     {
         super(Method.POST, url, errorListener);
 
-        this.getParams().put("data", gson.toJson(payload));
+        m_params = new HashMap<>();
+
+        String json = gson.toJson(payload);
+        m_params.put("data", json);
 
         this.m_listener = l;
         this.m_gson = gson;
         this.m_responseClass = responseClass;
+    }
+
+    /**
+     * Returns a Map of parameters to be used for a POST or PUT request. Can throw {@link
+     * AuthFailureError} as authentication may be required to provide these values.
+     *
+     * <p>Note that you can directly override {@link #getBody()} for custom data.
+     *
+     * @throws AuthFailureError in the event of auth failure
+     */
+    @Override
+    protected Map<String, String> getParams() throws AuthFailureError
+    {
+       return m_params;
     }
 
     /**
@@ -39,11 +60,11 @@ public class GsonObjectPost<S, T> extends Request<T>
     @Override
     protected Response<T> parseNetworkResponse(NetworkResponse response)
     {
-        try {
-            String json = new String(response.data,
-                    HttpHeaderParser.parseCharset(response.headers));
-            return Response.success(
-                    m_gson.fromJson(json, m_responseClass),
+        try
+        {
+            String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+            T r = (T) m_gson.fromJson(json, m_responseClass);
+            return Response.success(r,
                     HttpHeaderParser.parseCacheHeaders(response));
         } catch (UnsupportedEncodingException e) {
             return Response.error(new ParseError(e));

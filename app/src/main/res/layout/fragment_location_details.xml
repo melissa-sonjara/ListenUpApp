@@ -129,7 +129,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="36dp"
-            android:text="Back to Map" />
+            android:background="@color/colorPrimary"
+            android:text="Back to Map"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 
 </FrameLayout>

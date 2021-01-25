@@ -11,10 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="0dp"
-        android:background="@color/colorPrimary"
+        android:background="@color/ic_launcher_background"
         android:padding="5dp"
         android:text="Search by Location Name"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -31,10 +31,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="0dp"
-        android:background="@color/colorPrimary"
+        android:background="@color/ic_launcher_background"
         android:padding="5dp"
         android:text="Filter by Service Provided"
-        android:textColor="#FFFFFF"
+        android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -49,6 +49,8 @@
         android:id="@+id/search_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@android:string/search_go" />
+        android:background="@color/colorPrimary"
+        android:text="@android:string/search_go"
+        android:textColor="#FFFFFF" />
 
 </LinearLayout>

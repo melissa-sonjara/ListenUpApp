@@ -387,4 +387,24 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         Dao<Issue, Integer> dao = DaoManager.createDao(connectionSource, Issue.class);
         dao.delete(issue);
     }
+
+    public List<Issue> getPendingIssues()
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<Issue, Integer> dao = DaoManager.createDao(connectionSource, Issue.class);
+            QueryBuilder<Issue, Integer> qb = dao.queryBuilder();
+            qb.where().eq("status", "Pending").or().eq("status", "Error");
+            qb.orderBy("issue_id", true);
+            List<Issue> issueList = qb.query();
+
+            return issueList;
+        }
+        catch (SQLException e)
+        {
+            return null;
+        }
+    }
 }

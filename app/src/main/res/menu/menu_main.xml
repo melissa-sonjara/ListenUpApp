@@ -38,6 +38,9 @@
         android:id="@+id/menu_item_about"
         android:title="About" />
     <item
+        android:id="@+id/menu_show_tutorial"
+        android:title="Show Tutorial" />
+    <item
         android:id="@+id/menu_item_website"
         android:title="Go to Website..." />
 </menu>

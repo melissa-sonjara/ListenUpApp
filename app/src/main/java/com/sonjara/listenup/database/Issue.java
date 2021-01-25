@@ -70,9 +70,6 @@ public class Issue
     public String evidence;
 
     @DatabaseField
-    public String camp_services;
-
-    @DatabaseField
     public String areas;
 
     public IssueType getIssueType()

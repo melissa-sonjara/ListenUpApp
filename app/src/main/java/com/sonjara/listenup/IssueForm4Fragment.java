@@ -1,6 +1,7 @@
 package com.sonjara.listenup;
 
 import android.content.Context;
+import android.location.Location;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import com.sonjara.listenup.database.DatabaseHelper;
@@ -34,6 +36,7 @@ public class IssueForm4Fragment extends Fragment
 
     private Button m_issueNextButton;
     private Button m_issuePrevButton;
+    private Switch m_tagLocationSwitch;
 
     public IssueForm4Fragment()
     {
@@ -65,7 +68,7 @@ public class IssueForm4Fragment extends Fragment
         m_areaChecklist = (RecyclerView)view.findViewById(R.id.issue_areas);
         m_issuePrevButton = (Button)view.findViewById(R.id.issue_form_4_previous);
         m_issueNextButton = (Button)view.findViewById(R.id.issue_form_4_next);
-
+        m_tagLocationSwitch = (Switch)view.findViewById(R.id.issue_tag_location);
         DatabaseHelper db = DatabaseHelper.getInstance();
 
 
@@ -96,12 +99,6 @@ public class IssueForm4Fragment extends Fragment
         return view;
     }
 
-    /**
-     * Called when the fragment is visible to the user and actively running.
-     * This is generally
-     * tied to {@link Activity#onResume() Activity.onResume} of the containing
-     * Activity's lifecycle.
-     */
     @Override
     public void onResume()
     {
@@ -138,6 +135,8 @@ public class IssueForm4Fragment extends Fragment
             IssueViewModel issueViewModel = new ViewModelProvider(getActivity()).get(IssueViewModel.class);
             Issue issue = issueViewModel.getIssue();
             issue.status = "Pending";
+
+
             saveData();
             IssueForm4FragmentDirections.ActionIssueForm4Complete action = IssueForm4FragmentDirections.actionIssueForm4Complete();
             Navigation.findNavController(getView()).navigate(action);
@@ -157,6 +156,16 @@ public class IssueForm4Fragment extends Fragment
         Issue issue = issueViewModel.getIssue();
         issue.areas = m_areaChecklistAdapter.getAreaIdsAsString();
 
+        if (m_tagLocationSwitch.isChecked())
+        {
+            MainActivity activity = (MainActivity)getActivity();
+            Location l = activity.getLocation();
+            if (l != null)
+            {
+                issue.longitude = String.valueOf(l.getLongitude());
+                issue.latitude = String.valueOf(l.getLatitude());
+            }
+        }
         db.saveIssue(issue);
     }
 

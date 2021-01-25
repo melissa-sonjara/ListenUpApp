@@ -1,8 +1,12 @@
 package com.sonjara.listenup;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -16,10 +20,13 @@ import com.sonjara.listenup.map.ISearchFilterable;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 
 import android.view.Menu;
@@ -154,6 +161,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        if (isFirstRun())
+        {
+            startActivity(new Intent(this, ListenUpIntro.class));
+        }
+
         if (getLastSyncTime() == null)
         {
             handleSyncMenuItem();
@@ -223,12 +235,21 @@ public class MainActivity extends AppCompatActivity {
                 handleGoToWebsite();
                 return true;
 
+            case R.id.menu_show_tutorial:
+                handleShowTutorial();
+                return true;
+
             default:
 
                 break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void handleShowTutorial()
+    {
+        startActivity(new Intent(this, ListenUpIntro.class));
     }
 
     private void handleGoToWebsite()
@@ -372,6 +393,13 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    public boolean isFirstRun()
+    {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean intro_run = preferences.getBoolean("intro_run", false);
+        return !intro_run;
+    }
+
     public void handleGoToCurrentLocation()
     {
        Fragment fragment = getCurrentFragment();
@@ -437,5 +465,90 @@ public class MainActivity extends AppCompatActivity {
 
         return filtered;
     }
+    // The minimum distance to change Updates in meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 10; // 10 meters
 
+    // The minimum time between updates in milliseconds
+    private static final long MIN_TIME_BW_UPDATES = 1000 * 60 * 1; // 1 minute
+
+    private LocationManager m_locationManager = null;
+    private boolean m_isGPSEnabled = false;
+    private boolean m_isNetworkEnabled = false;
+    private boolean m_canGetLocation = false;
+    private Location m_location = null;
+    private double m_latitude;
+    private double m_longitude;
+
+    public Location getLocation() {
+        try {
+            m_locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
+
+            // getting GPS status
+            m_isGPSEnabled = m_locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+            // getting network status
+            m_isNetworkEnabled = m_locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            if (!m_isGPSEnabled && !m_isNetworkEnabled)
+            {
+                // no network provider is enabled
+            }
+            else
+            {
+                this.m_canGetLocation = true;
+                // First get location from Network Provider
+                if (m_isNetworkEnabled) {
+                    //check the network permission
+                    if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                            && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+                    {
+                        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                    }
+
+                    Log.d("Network", "Network");
+                    if (m_locationManager != null)
+                    {
+                        m_location = m_locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+                        if (m_location != null)
+                        {
+                            m_latitude = m_location.getLatitude();
+                            m_longitude = m_location.getLongitude();
+                        }
+                    }
+                }
+
+                // if GPS Enabled get lat/long using GPS Services
+                if (m_isGPSEnabled)
+                {
+                    if (m_location == null)
+                    {
+                        //check the network permission
+                        if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 101);
+                        }
+
+                        Log.d("GPS Enabled", "GPS Enabled");
+                        if (m_locationManager != null)
+                        {
+                            m_location = m_locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+                            if (m_location != null)
+                            {
+                                m_latitude = m_location.getLatitude();
+                                m_longitude = m_location.getLongitude();
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+
+        return m_location;
+    }
 }

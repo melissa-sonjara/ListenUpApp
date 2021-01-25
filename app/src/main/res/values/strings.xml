@@ -14,7 +14,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="app_title">Listen Up</string>
-    <string name="about_listenup">The Listen Up Platform for Action  has been designed by a collective of Ugandan and South Sudanese refugee women&quot;s groups, GBV, child protection, and wider protection actors, livelihoods, health and education actors, women's participation, gender equality and PSEA experts with support and guidance from IRC.</string>
+    <string name="about_listenup">The Listen Up Platform for Action  has been designed by a collective of Ugandan and South Sudanese refugee women&quot;s groups, GBV, child protection, and wider protection actors, livelihoods, health and education actors, women&quot;s participation, gender equality and PSEA experts with support and guidance from IRC.</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -24,4 +24,13 @@
     <string name="invalid_username">Not a valid username</string>
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
+    <string name="about_listenup_app">This app provides you with up-to-date information on Gender-Based Violence related services in Bidi Bidi. Additionally, you can report issues regarding equitable and safe access to services.</string>
+    <string name="intro_toolbar">Across the top of the app you will find a set of icons.</string>
+    <string name="intro_sync">To retrieve the latest information, tap the Sync icon. You will need mobile data or a WiFi connection for this to work. You will also need an account on the Listen Up Platform website. The first time the app is run, the sync will start automatically.</string>
+    <string name="intro_location">The app displays service locations on a map. To move the map to your current location, tap the location icon.</string>
+    <string name="intro_list">You can toggle the display to show a list of locations instead of the map view by tapping on the list icon.</string>
+    <string name="intro_map">When you are in the list view, you can tap the map icon to return to the map display. You can also tap the location tag next to each location in the list to find that location on the map.</string>
+    <string name="intro_search">You can find specific locations for services by tapping on the search icon. You can search by name, or by the types of services required.</string>
+    <string name="intro_issue">Finally you can report issues with safe and equitable access to services by tapping on the red button at the bottom right of the screen.</string>
+
 </resources>

@@ -1,9 +1,11 @@
 package com.sonjara.listenup.database;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -15,12 +17,14 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.j256.ormlite.dao.Dao;
 import com.sonjara.listenup.MainActivity;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -32,6 +36,11 @@ public class DatabaseSync
     public interface SyncUpdateListener
     {
         void onSyncUpdate(String stage, String status, int synced, int total);
+    }
+
+    public interface SubmissionUpdateListener
+    {
+        void onSubmissionUpdate(String status, int submitted, int total);
     }
 
     public static final int LOGIN_SUCCESS = 1;
@@ -49,17 +58,30 @@ public class DatabaseSync
     private String token = null;
 
     private Boolean syncing = false;
+    private List<Issue> submitting = null;
+
     private int m_tablesSynced = 0;
     private int m_tablesToSync = 0;
 
     private int m_imagesCached = 0;
     private int m_imageTotal = 0;
 
+    private int m_issuesSubmitted = 0;
+    private int m_issuesToSubmit = 0;
+
+
     private SyncUpdateListener m_syncUpdateListener = null;
 
     public void setSyncUpdateListener(SyncUpdateListener listener)
     {
         m_syncUpdateListener = listener;
+    }
+
+    private SubmissionUpdateListener m_submissionUpdateListener = null;
+
+    public void setSubmissionUpdateListener(SubmissionUpdateListener submissionUpdateListener)
+    {
+        m_submissionUpdateListener = submissionUpdateListener;
     }
 
     public LoginResultListener getLoginResultListener()
@@ -123,9 +145,13 @@ public class DatabaseSync
         {
             m_activity.handleLogin();
         }
-        else
+        else if (syncing)
         {
-            if (syncing) doSync();
+             doSync();
+        }
+        else if (submitting != null)
+        {
+            submitPendingIssues(m_submissionUpdateListener);
         }
     }
 
@@ -245,12 +271,106 @@ public class DatabaseSync
         }
     }
 
-    public void submitIssue(Issue issue)
+    public void submitPendingIssues(SubmissionUpdateListener listener)
     {
-        if (issue == null || issue.status != "Pending") return;
+        m_submissionUpdateListener = listener;
+
+        DatabaseHelper db = DatabaseHelper.getInstance();
+        submitting = db.getPendingIssues();
+        m_issuesSubmitted = 0;
+        m_issuesSubmitted = 0;
+
+        if (submitting != null && submitting.size() > 0)
+        {
+            m_issuesToSubmit = submitting.size();
+
+            if (token == null)
+            {
+                this.authenticate();
+                return;
+            }
+
+            for(Issue issue: submitting)
+            {
+                try
+                {
+                    submitIssue(issue);
+                }
+                catch (AuthFailureError authFailureError)
+                {
+                    //Toast.makeText(getContext(), authFailureError.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+        else
+        {
+            if (m_submissionUpdateListener != null) m_submissionUpdateListener.onSubmissionUpdate("Completed", 0, 0);
+        }
+
+    }
+
+    private void submitIssue(Issue issue) throws AuthFailureError
+    {
+        if (issue == null || !"Pending".equals(issue.status)) return;
 
         String json = new Gson().toJson(issue);
+        String url = m_url + "issue_submission" + "?token=" + token;
 
+        GsonObjectPost<Issue, IssueSubmissionResponse> request = new GsonObjectPost<Issue, IssueSubmissionResponse>(gson, url, issue, IssueSubmissionResponse.class, new Response.Listener<IssueSubmissionResponse>()
+        {
+            @Override
+            public void onResponse(IssueSubmissionResponse response)
+            {
+                ++m_issuesSubmitted;
+
+                try
+                {
+                    DatabaseHelper db = getDatabaseHelper();
+                    Issue issue = db.getIssue(response.issue_id);
+                    issue.status = response.submission_status;
+                    issue.safety_issue_id = response.safety_issue_id;
+                    db.saveIssue(issue);
+
+                    if (m_submissionUpdateListener != null)
+                    {
+                        String status = m_issuesSubmitted == m_issuesToSubmit ? "Completed" : "Submitting";
+                        m_submissionUpdateListener.onSubmissionUpdate(status, m_issuesSubmitted, m_issuesToSubmit);
+                        if (m_issuesSubmitted == m_issuesToSubmit)
+                        {
+                            submitting = null;
+                            m_issuesSubmitted = 0;
+                            m_issuesToSubmit = 0;
+                        }
+                    }
+                }
+                catch(Exception e)
+                {
+                }
+            }
+        },
+
+        new Response.ErrorListener()
+        {
+            @Override
+            public void onErrorResponse(VolleyError error)
+            {
+                ++m_issuesSubmitted;
+
+                if (m_submissionUpdateListener != null)
+                {
+                    String status = m_issuesSubmitted == m_issuesToSubmit ? "Completed" : "Submitting";
+                    m_submissionUpdateListener.onSubmissionUpdate(status, m_issuesSubmitted, m_issuesToSubmit);
+                    if (m_issuesSubmitted == m_issuesToSubmit)
+                    {
+                        submitting = null;
+                        m_issuesSubmitted = 0;
+                        m_issuesToSubmit = 0;
+                    }
+                }
+            }
+        });
+
+        getQueue().add(request);
     }
 
     public void cacheImages()

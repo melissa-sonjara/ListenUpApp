@@ -15,22 +15,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.sonjara.listenup.database.DatabaseHelper;
+import com.sonjara.listenup.database.DatabaseSync;
 import com.sonjara.listenup.database.Issue;
 
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link IssueListFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class IssueListFragment extends Fragment implements IssueListViewAdapter.OnIssueClicked, IssueListViewAdapter.OnDeleteIssueClicked
+public class IssueListFragment extends Fragment implements
+        IssueListViewAdapter.OnIssueClicked,
+        IssueListViewAdapter.OnDeleteIssueClicked,
+        DatabaseSync.SubmissionUpdateListener
 {
     private Button m_reportIssueButton;
+    private Button m_submitButton;
     private RecyclerView m_issueList;
+    private ProgressBar m_submittingIndicator;
 
     public IssueListFragment()
     {
@@ -96,7 +105,30 @@ public class IssueListFragment extends Fragment implements IssueListViewAdapter.
                 Navigation.findNavController(getView()).navigate(action);
             }
         });
+
+        m_submitButton = (Button)view.findViewById(R.id.issue_list_submit_button);
+        m_submitButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                submitPendingIssues();
+            }
+        });
+
+        m_submittingIndicator = (ProgressBar)view.findViewById(R.id.submission_progress_indicator);
+        m_submittingIndicator.setVisibility(View.INVISIBLE);
         return view;
+    }
+
+    private void submitPendingIssues()
+    {
+        MainActivity activity = (MainActivity)getActivity();
+        DatabaseSync sync = activity.getSyncHelper();
+
+        m_submitButton.setEnabled(false);
+        m_submittingIndicator.setVisibility(View.VISIBLE);
+        sync.submitPendingIssues(this);
     }
 
     @Override
@@ -141,5 +173,20 @@ public class IssueListFragment extends Fragment implements IssueListViewAdapter.
     {
         super.onAttach(context);
         ((MainActivity)getActivity()).setCurrentFragment(this);
+    }
+
+    @Override
+    public void onSubmissionUpdate(String status, int submitted, int total)
+    {
+        if (status == "Completed")
+        {
+            m_submittingIndicator.setVisibility(View.INVISIBLE);
+            m_submitButton.setEnabled(true);
+        }
+
+        DatabaseHelper db = DatabaseHelper.getInstance();
+        IssueListViewAdapter adapter = (IssueListViewAdapter)m_issueList.getAdapter();
+        adapter.setIssues(db.getIssues());
+        adapter.notifyDataSetChanged();
     }
 }
