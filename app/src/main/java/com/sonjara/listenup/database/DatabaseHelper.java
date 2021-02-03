@@ -30,7 +30,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
     public void onCreate(SQLiteDatabase db, ConnectionSource connectionSource)
     {
         try {
+            TableUtils.createTable(connectionSource, MobileUserDetails.class);
             TableUtils.createTable(connectionSource, Service.class);
+            TableUtils.createTableIfNotExists(connectionSource, OperationalArea.class);
+            TableUtils.createTableIfNotExists(connectionSource, OperationalAreaXref.class);
             TableUtils.createTable(connectionSource, AreaDetails.class);
             TableUtils.createTable(connectionSource, LocationDetails.class);
             TableUtils.createTable(connectionSource, IssueType.class);
@@ -56,7 +59,10 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         ConnectionSource connectionSource = getConnectionSource();
 
         try {
+            TableUtils.dropTable(connectionSource, MobileUserDetails.class, true);
             TableUtils.dropTable(connectionSource, Service.class, true);
+            TableUtils.dropTable(connectionSource, OperationalArea.class, true);
+            TableUtils.dropTable(connectionSource, OperationalAreaXref.class, true);
             TableUtils.dropTable(connectionSource, AreaDetails.class, true);
             TableUtils.dropTable(connectionSource, LocationDetails.class, true);
             TableUtils.dropTable(connectionSource, IssueType.class, true);
@@ -401,6 +407,59 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
             List<Issue> issueList = qb.query();
 
             return issueList;
+        }
+        catch (SQLException e)
+        {
+            return null;
+        }
+    }
+
+    public MobileUserDetails getMobileUserDetails()
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<MobileUserDetails, Integer> dao = DaoManager.createDao(connectionSource, MobileUserDetails.class);
+            QueryBuilder<MobileUserDetails, Integer> qb = dao.queryBuilder();
+            List<MobileUserDetails> users = dao.queryForAll();
+            if (users.size() > 0)
+            {
+                return users.get(0);
+            }
+            else
+            {
+                return null;
+            }
+        }
+        catch(SQLException e)
+        {
+            return null;
+        }
+    }
+
+    public void clearMobileUserData()
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            TableUtils.clearTable(connectionSource, MobileUserDetails.class);
+        }
+        catch(SQLException e)
+        {
+        }
+    }
+    public OperationalArea getOperationalArea(int operational_area_id)
+    {
+        ConnectionSource connectionSource = getConnectionSource();
+
+        try
+        {
+            Dao<OperationalArea, Integer> dao = DaoManager.createDao(connectionSource, OperationalArea.class);
+            OperationalArea operationalArea = dao.queryForId(operational_area_id);
+
+            return operationalArea;
         }
         catch (SQLException e)
         {

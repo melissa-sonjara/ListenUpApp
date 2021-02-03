@@ -50,19 +50,13 @@ public class ListenUpIntro extends AppIntro
         sliderPage3.setBackgroundColor(color1);
         addSlide(AppIntroFragment.newInstance(sliderPage3));
 
-        SliderPage sliderPage4 = new SliderPage();
-        sliderPage4.setTitle("Getting The Latest Information");
-        sliderPage4.setDescription(getString(R.string.intro_sync));
-        sliderPage4.setImageDrawable(R.drawable.intro_icons_sync);
-        sliderPage4.setBackgroundColor(color1);
-        addSlide(AppIntroFragment.newInstance(sliderPage4));
 
-        SliderPage sliderPage5 = new SliderPage();
-        sliderPage5.setTitle("Go To Your Location");
-        sliderPage5.setDescription(getString(R.string.intro_location));
-        sliderPage5.setImageDrawable(R.drawable.intro_icons_location);
-        sliderPage5.setBackgroundColor(color1);
-        addSlide(AppIntroFragment.newInstance(sliderPage5));
+        SliderPage sliderPage8 = new SliderPage();
+        sliderPage8.setTitle("Search for Service Locations");
+        sliderPage8.setDescription(getString(R.string.intro_search));
+        sliderPage8.setImageDrawable(R.drawable.intro_icons_search);
+        sliderPage8.setBackgroundColor(color1);
+        addSlide(AppIntroFragment.newInstance(sliderPage8));
 
         SliderPage sliderPage6 = new SliderPage();
         sliderPage6.setTitle("See a List of Service Locations");
@@ -78,12 +72,19 @@ public class ListenUpIntro extends AppIntro
         sliderPage7.setBackgroundColor(color1);
         addSlide(AppIntroFragment.newInstance(sliderPage7));
 
-        SliderPage sliderPage8 = new SliderPage();
-        sliderPage8.setTitle("Search for Service Locations");
-        sliderPage8.setDescription(getString(R.string.intro_search));
-        sliderPage8.setImageDrawable(R.drawable.intro_icons_search);
-        sliderPage8.setBackgroundColor(color1);
-        addSlide(AppIntroFragment.newInstance(sliderPage8));
+        SliderPage sliderPage5 = new SliderPage();
+        sliderPage5.setTitle("Go To Your Location");
+        sliderPage5.setDescription(getString(R.string.intro_location));
+        sliderPage5.setImageDrawable(R.drawable.intro_icons_location);
+        sliderPage5.setBackgroundColor(color1);
+        addSlide(AppIntroFragment.newInstance(sliderPage5));
+
+        SliderPage sliderPage4 = new SliderPage();
+        sliderPage4.setTitle("Getting The Latest Information");
+        sliderPage4.setDescription(getString(R.string.intro_sync));
+        sliderPage4.setImageDrawable(R.drawable.intro_icons_sync);
+        sliderPage4.setBackgroundColor(color1);
+        addSlide(AppIntroFragment.newInstance(sliderPage4));
 
         SliderPage sliderPage9 = new SliderPage();
         sliderPage8.setTitle("Report Issues With Equitable & Safe Access");

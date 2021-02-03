@@ -83,4 +83,24 @@ public class SyncDialog extends DialogFragment implements DatabaseSync.SyncUpdat
         m_syncProgress.setMax(total);
         m_syncProgress.setProgress(synced);
     }
+
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This is generally
+     * tied to {@link Activity#onResume() Activity.onResume} of the containing
+     * Activity's lifecycle.
+     */
+    @Override
+    public void onResume()
+    {
+        MainActivity activity = (MainActivity)getActivity();
+        DatabaseSync sync = activity.getSyncHelper();
+        if (activity.getLastSyncTime() == null && !sync.isSyncing())
+        {
+            sync.setSyncUpdateListener(this);
+            sync.sync();
+        }
+
+        super.onResume();
+    }
 }

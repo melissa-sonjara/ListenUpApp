@@ -69,6 +69,10 @@ public class DatabaseSync
     private int m_issuesSubmitted = 0;
     private int m_issuesToSubmit = 0;
 
+    public Boolean isSyncing()
+    {
+        return syncing;
+    }
 
     private SyncUpdateListener m_syncUpdateListener = null;
 
@@ -221,7 +225,10 @@ public class DatabaseSync
         m_tablesSynced = 0;
         m_tablesToSync = 0;
 
+        syncTable(new DatabaseSyncHelper<MobileUserDetails, MobileUserDetails[]>(this, MobileUserDetails.class, MobileUserDetails[].class, "mobile_user_details", ""));
         syncTable(new DatabaseSyncHelper<Service, Service[]>(this, Service.class, Service[].class, "service", ""));
+        syncTable(new DatabaseSyncHelper<OperationalArea, OperationalArea[]>(this, OperationalArea.class, OperationalArea[].class, "operational_areas", ""));
+        syncTable(new DatabaseSyncHelper<OperationalAreaXref, OperationalAreaXref[]>(this, OperationalAreaXref.class, OperationalAreaXref[].class, "operational_area_xrefs", ""));
         syncTable(new DatabaseSyncHelper<AreaDetails, AreaDetails[]>(this, AreaDetails.class, AreaDetails[].class, "area_details", ""));
         syncTable(new DatabaseSyncHelper<LocationDetails, LocationDetails[]>(this, LocationDetails.class, LocationDetails[].class, "location_details", ""));
         syncTable(new DatabaseSyncHelper<IssueType, IssueType[]>(this, IssueType.class, IssueType[].class, "issue_type", ""));

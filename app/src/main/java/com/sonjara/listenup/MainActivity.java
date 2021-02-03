@@ -363,6 +363,15 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    public void clearToken()
+    {
+        SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("token", null);
+        editor.putString("token_expiry", null);
+        editor.apply();
+    }
+
     public Date getLastSyncTime()
     {
         String dateStr = getPreferences(Context.MODE_PRIVATE).getString("last_sync", null);

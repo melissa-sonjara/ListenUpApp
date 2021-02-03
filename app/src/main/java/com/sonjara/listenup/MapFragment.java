@@ -196,6 +196,8 @@ public class MapFragment extends Fragment implements ISearchFilterable
             m_markers.add(locationMarker);
             mapView.getOverlays().add(locationMarker);
         }
+
+        mapView.invalidate();
     }
 
     public void handleLocationDetails(LocationDetails location)

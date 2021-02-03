@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import com.sonjara.listenup.database.LocationDetails;
 import com.sonjara.listenup.dummy.DummyContent;
@@ -35,6 +37,9 @@ public class LocationListFragment extends Fragment implements ISearchFilterable,
     private int mColumnCount = 1;
 
     private LocationDetailsViewAdapter m_adapter = null;
+    private ViewSwitcher m_viewSwitcher;
+    private TextView m_emptyMessage;
+    private RecyclerView m_locationList;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -72,31 +77,33 @@ public class LocationListFragment extends Fragment implements ISearchFilterable,
     {
         View view = inflater.inflate(R.layout.fragment_location_list_list, container, false);
 
+        m_viewSwitcher = (ViewSwitcher)view.findViewById(R.id.location_list_view_switcher);
+        m_locationList = (RecyclerView)view.findViewById(R.id.location_list);
+        m_emptyMessage = (TextView)view.findViewById(R.id.location_list_empty_message);
+
         // Set the adapter
-        if (view instanceof RecyclerView)
+        if (m_locationList instanceof RecyclerView)
         {
             Context context = view.getContext();
             MainActivity activity = (MainActivity)getActivity();
 
-            RecyclerView recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1)
             {
                 LinearLayoutManager layoutManager = new LinearLayoutManager(context);
-                recyclerView.setLayoutManager(layoutManager);
-                DividerItemDecoration divider = new DividerItemDecoration(recyclerView.getContext(),
+                m_locationList.setLayoutManager(layoutManager);
+                DividerItemDecoration divider = new DividerItemDecoration(m_locationList.getContext(),
                         layoutManager.getOrientation());
-                recyclerView.addItemDecoration(divider);
+                m_locationList.addItemDecoration(divider);
             }
             else
             {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+                m_locationList.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
             m_adapter = new LocationDetailsViewAdapter(activity.getFilteredLocations());
             m_adapter.setOnShowLocationDetails(this);
             m_adapter.setOnShowMapLocation(this);
-            recyclerView.setAdapter(m_adapter);
-
-
+            m_locationList.setAdapter(m_adapter);
+            updateView();
         }
         return view;
     }
@@ -118,7 +125,26 @@ public class LocationListFragment extends Fragment implements ISearchFilterable,
     {
         MainActivity activity = (MainActivity)getActivity();
         m_adapter.setLocations(activity.getFilteredLocations());
+        updateView();
         m_adapter.notifyDataSetChanged();
+    }
+
+    private void updateView()
+    {
+        if (m_adapter.getItemCount() == 0)
+        {
+            if (m_viewSwitcher.getNextView().getId() == R.id.location_list_empty_placeholder)
+            {
+                m_viewSwitcher.showNext();
+            }
+        }
+        else
+        {
+            if (m_viewSwitcher.getNextView().getId() == R.id.location_list)
+            {
+                m_viewSwitcher.showNext();
+            }
+        }
     }
 
     @Override
@@ -144,4 +170,6 @@ public class LocationListFragment extends Fragment implements ISearchFilterable,
         action.setLocationId(location.location_id);
         Navigation.findNavController(getView()).navigate(action);
     }
+
+
 }

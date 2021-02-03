@@ -12,7 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 
+import com.sonjara.listenup.database.DatabaseHelper;
 import com.sonjara.listenup.database.DatabaseSync;
+import com.sonjara.listenup.database.MobileUserDetails;
+import com.sonjara.listenup.database.OperationalArea;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -23,6 +26,11 @@ public class SettingsDialog extends DialogFragment
     private TextView m_tokenExpiresDate;
     private Button m_dismissButton;
     private Button m_signOutButton;
+    private TextView m_loginName;
+    private TextView m_loginNameLabel;
+    private TextView m_organizationName;
+    private TextView m_operationalAreaLabel;
+    private TextView m_operationalArea;
 
     /**
      * Called to have the fragment instantiate its user interface view.
@@ -56,6 +64,11 @@ public class SettingsDialog extends DialogFragment
         m_tokenExpiresDate = (TextView)view.findViewById(R.id.token_expires);
         m_dismissButton = (Button)view.findViewById(R.id.settings_dismiss_button);
         m_signOutButton = (Button)view.findViewById(R.id.sign_out_button);
+        m_loginNameLabel = (TextView)view.findViewById(R.id.login_name_label);
+        m_loginName = (TextView)view.findViewById(R.id.login_name);
+        m_organizationName = (TextView)view.findViewById(R.id.login_organization);
+        m_operationalAreaLabel = (TextView)view.findViewById(R.id.operational_area_label);
+        m_operationalArea = (TextView)view.findViewById(R.id.login_operational_area);
 
         Date lastSync = activity.getLastSyncTime();
         Date tokenExpires = activity.getTokenExpiry();
@@ -99,10 +112,43 @@ public class SettingsDialog extends DialogFragment
             @Override
             public void onClick(View v)
             {
-                activity.setToken(null, null);
+                activity.clearToken();
+                DatabaseHelper db = DatabaseHelper.getInstance();
+                db.clearMobileUserData();
                 dismiss();
             }
         });
+
+        DatabaseHelper db = DatabaseHelper.getInstance();
+        MobileUserDetails user = db.getMobileUserDetails();
+        if (user != null)
+        {
+            m_loginName.setText(user.name);
+            m_organizationName.setText(user.organization);
+            OperationalArea area = db.getOperationalArea(user.operational_area_id);
+            if (area != null)
+            {
+                m_operationalArea.setText(area.name);
+            }
+            else
+            {
+                m_operationalArea.setText("Not set");
+            }
+
+            m_loginNameLabel.setVisibility(View.VISIBLE);
+            m_loginName.setVisibility(View.VISIBLE);
+            m_organizationName.setVisibility(View.VISIBLE);
+            m_operationalAreaLabel.setVisibility(View.VISIBLE);
+            m_operationalArea.setVisibility(View.VISIBLE);
+        }
+        else
+        {
+            m_loginNameLabel.setVisibility(View.GONE);
+            m_loginName.setVisibility(View.GONE);
+            m_organizationName.setVisibility(View.GONE);
+            m_operationalAreaLabel.setVisibility(View.GONE);
+            m_operationalArea.setVisibility(View.GONE);
+        }
         return view;
 
     }
