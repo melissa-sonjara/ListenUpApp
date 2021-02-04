@@ -78,18 +78,13 @@ public class SyncDialog extends DialogFragment implements DatabaseSync.SyncUpdat
             activity.setLastSyncTime(now);
             activity.applyFilter();
             getDialog().dismiss();
+            activity.getLocation();
         }
 
         m_syncProgress.setMax(total);
         m_syncProgress.setProgress(synced);
     }
 
-    /**
-     * Called when the fragment is visible to the user and actively running.
-     * This is generally
-     * tied to {@link Activity#onResume() Activity.onResume} of the containing
-     * Activity's lifecycle.
-     */
     @Override
     public void onResume()
     {

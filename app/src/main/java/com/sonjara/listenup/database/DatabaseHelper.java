@@ -8,6 +8,7 @@ import com.j256.ormlite.dao.BaseDaoImpl;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.Where;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 
@@ -342,15 +343,20 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
 
     public List<AreaHierarchyNode> getAreaHierarchy()
     {
+        return getAreaHierarchy(0);
+    }
+
+    public List<AreaHierarchyNode> getAreaHierarchy(int operational_area_id)
+    {
         LinkedList<AreaHierarchyNode> areaList = new LinkedList<>();
-        doGetAreaHierarchy(0, 0, areaList);
+        doGetAreaHierarchy(0, 0, areaList, operational_area_id);
 
         return areaList;
     }
 
-    private void doGetAreaHierarchy(int parent_id, int level, LinkedList<AreaHierarchyNode> areaList)
+    private void doGetAreaHierarchy(int parent_id, int level, LinkedList<AreaHierarchyNode> areaList, int operational_area_id)
     {
-        List<AreaDetails> areas = getAreasByParent(parent_id);
+        List<AreaDetails> areas = getAreasByParent(parent_id, operational_area_id);
         if (areas == null) return;
 
         for(AreaDetails area: areas)
@@ -362,11 +368,16 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
             node.setName(area.name);
             areaList.add(node);
 
-            doGetAreaHierarchy(area.area_id, level+1, areaList);
+            doGetAreaHierarchy(area.area_id, level+1, areaList, operational_area_id);
         }
     }
 
     public List<AreaDetails> getAreasByParent(int parent_id)
+    {
+        return getAreasByParent(parent_id, 0);
+    }
+
+    public List<AreaDetails> getAreasByParent(int parent_id, int operational_area_id)
     {
         ConnectionSource connectionSource = getConnectionSource();
 
@@ -374,7 +385,18 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         {
             Dao<AreaDetails, Integer> dao = DaoManager.createDao(connectionSource, AreaDetails.class);
             QueryBuilder<AreaDetails, Integer> qb = dao.queryBuilder();
-            qb.where().eq("parent_id", parent_id);
+            Where<AreaDetails, Integer> where = qb.where().eq("parent_id", parent_id);
+
+            if (operational_area_id != 0)
+            {
+                Dao<OperationalAreaXref, Integer> xrefDao = DaoManager.createDao(connectionSource, OperationalAreaXref.class);
+                QueryBuilder<OperationalAreaXref, Integer> xrefqb = xrefDao.queryBuilder();
+                xrefqb.where().eq("operational_area_id", operational_area_id);
+                xrefqb.selectColumns("area_id");
+
+                where.and().in("area_id", xrefqb);
+            }
+
             qb.orderBy("name", true);
             List<AreaDetails> areaDetailsList = qb.query();
 
@@ -438,6 +460,12 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         }
     }
 
+    public int getCurrentOperationalAreaID()
+    {
+        MobileUserDetails user = getMobileUserDetails();
+        return (user != null) ? user.operational_area_id : 0;
+    }
+
     public void clearMobileUserData()
     {
         ConnectionSource connectionSource = getConnectionSource();
@@ -465,5 +493,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper
         {
             return null;
         }
+    }
+
+    public int submissionsWaiting()
+    {
+        List<Issue> issues = getPendingIssues();
+        return (issues != null) ? issues.size() : 0;
     }
 }

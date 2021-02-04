@@ -33,5 +33,6 @@
     <string name="intro_search">You can find specific locations for services by tapping on the search icon. You can search by name, or by the types of services required.</string>
     <string name="intro_issue">Finally you can report issues regarding safe and equitable access to services by tapping on the red button at the bottom right of the screen.</string>
     <string name="no_matching_locations_found_in_your_area">No matching locations found in your area.</string>
+    <string name="issue_intro"><b>IMPORTANT:</b> Do not use this form to report instances of Gender-Based Violence. This form is for reporting issues relating to safe and equitable access to services only.</string>
 
 </resources>

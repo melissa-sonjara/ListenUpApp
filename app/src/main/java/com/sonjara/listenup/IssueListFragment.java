@@ -1,9 +1,11 @@
 package com.sonjara.listenup;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
@@ -134,6 +136,12 @@ public class IssueListFragment extends Fragment implements
     @Override
     public void OnIssueClicked(Issue issue)
     {
+        if ("Submitted".equals(issue.status))
+        {
+
+            Toast.makeText(getContext(), "This issue has been submitted. To make changes or updates, please log in to the Web Platform.", Toast.LENGTH_LONG).show();
+            return;
+        }
         IssueViewModel viewModel = new ViewModelProvider(getActivity()).get(IssueViewModel.class);
         viewModel.setIssue(issue);
 
@@ -188,5 +196,34 @@ public class IssueListFragment extends Fragment implements
         IssueListViewAdapter adapter = (IssueListViewAdapter)m_issueList.getAdapter();
         adapter.setIssues(db.getIssues());
         adapter.notifyDataSetChanged();
+    }
+
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        MainActivity activity = (MainActivity)getActivity();
+        DatabaseHelper db = DatabaseHelper.getInstance();
+        if (db.submissionsWaiting() > 0 && activity.isNetworkAvailable())
+        {
+            //Put up the Yes/No message box
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder
+                .setTitle("Pending Issues")
+                .setMessage("You have issues awaiting submission. Send them now?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int which)
+                    {
+                        //Yes button clicked, do something
+                        dialog.dismiss();
+                        submitPendingIssues();
+                    }
+                })
+                .setNegativeButton("No", null)						//Do nothing on no
+                .show();
+       }
     }
 }

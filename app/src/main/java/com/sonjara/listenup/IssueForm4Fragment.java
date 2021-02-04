@@ -75,7 +75,7 @@ public class IssueForm4Fragment extends Fragment
         LinearLayoutManager layoutManager = new LinearLayoutManager(m_areaChecklist.getContext());
         m_areaChecklist.setLayoutManager(layoutManager);
 
-        m_areaChecklistAdapter = new AreaChecklistAdapter(db.getAreaHierarchy());
+        m_areaChecklistAdapter = new AreaChecklistAdapter(db.getAreaHierarchy(db.getCurrentOperationalAreaID()));
         m_areaChecklist.setAdapter(m_areaChecklistAdapter);
 
 

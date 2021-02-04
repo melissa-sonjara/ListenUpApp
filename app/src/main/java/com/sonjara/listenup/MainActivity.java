@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -301,6 +303,42 @@ public class MainActivity extends AppCompatActivity {
         //mapView.onPause();  //needed for compass, my location overlays, v6.0.0 and up
     }
 
+    /**
+     * Called after {@link #onStop} when the current activity is being
+     * re-displayed to the user (the user has navigated back to it).  It will
+     * be followed by {@link #onStart} and then {@link #onResume}.
+     *
+     * <p>For activities that are using raw {@link Cursor} objects (instead of
+     * creating them through
+     * {@link #managedQuery(Uri, String[], String, String[], String)},
+     * this is usually the place
+     * where the cursor should be requeried (because you had deactivated it in
+     * {@link #onStop}.
+     *
+     * <p><em>Derived classes must call through to the super class's
+     * implementation of this method.  If they do not, an exception will be
+     * thrown.</em></p>
+     *
+     * @see #onStop
+     * @see #onStart
+     * @see #onResume
+     */
+    @Override
+    protected void onRestart()
+    {
+        super.onRestart();
+
+        if (isNetworkAvailable())
+        {
+            DatabaseHelper db = DatabaseHelper.getInstance();
+            if (db.submissionsWaiting() > 0)
+            {
+                Navigation.findNavController(this, R.id.nav_host_fragment).navigate(R.id.action_global_issue_list);
+                hideIssueButton();
+            }
+        }
+    }
+
     public void handleSyncMenuItem()
     {
         SyncDialog dialog = new SyncDialog();
@@ -559,5 +597,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return m_location;
+    }
+
+    public boolean isNetworkAvailable()
+    {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
