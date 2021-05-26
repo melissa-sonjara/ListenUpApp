@@ -62,7 +62,7 @@ public class AboutFragment extends Fragment
             @Override
             public void onClick(View v) {
 
-                Intent Getintent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://listenup.sonjara.com"));
+                Intent Getintent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + getString(R.string.app_domain)));
                 startActivity(Getintent);
 
             }

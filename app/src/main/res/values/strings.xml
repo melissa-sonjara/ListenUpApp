@@ -14,7 +14,7 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="app_title">Listen Up</string>
-    <string name="about_listenup">The Listen Up Platform for Action  has been designed by a collective of Ugandan and South Sudanese refugee women&quot;s groups, GBV, child protection, and wider protection actors, livelihoods, health and education actors, women&quot;s participation, gender equality and PSEA experts with support and guidance from IRC.</string>
+    <string name="about_listenup">The aim of the Listen Up Platform for Action is to amplify the voice and power of refugee and host community women and girls by improving their safe and equitable access to humanitarian aid.</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Password</string>
@@ -34,5 +34,6 @@
     <string name="intro_issue">Finally you can report issues regarding safe and equitable access to services by tapping on the red button at the bottom right of the screen.</string>
     <string name="no_matching_locations_found_in_your_area">No matching locations found in your area.</string>
     <string name="issue_intro"><b>IMPORTANT:</b> Do not use this form to report instances of Gender-Based Violence. This form is for reporting issues relating to safe and equitable access to services only.</string>
+    <string name="app_domain">listenup.rescue.org</string>
 
 </resources>

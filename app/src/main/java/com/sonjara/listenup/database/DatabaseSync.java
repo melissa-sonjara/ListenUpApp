@@ -54,7 +54,16 @@ public class DatabaseSync
     private MainActivity m_activity;
 
     private RequestQueue m_queue = null;
-    private String m_url = "https://listenup.sonjara.com/api/";
+    private String m_url = null;
+
+    private String getUrl()
+    {
+        if (m_url == null)
+        {
+            m_url = "https://" + m_activity.getDomain() + "/api/";
+        }
+        return m_url;
+    }
     private String token = null;
 
     private Boolean syncing = false;
@@ -161,7 +170,7 @@ public class DatabaseSync
 
     public void login(String username, String password)
     {
-        String url = m_url + "authenticate?username=" + username + "&password=" + password;
+        String url = getUrl() + "authenticate?username=" + username + "&password=" + password;
 
         JsonObjectRequest request = new JsonObjectRequest(url, null, new Response.Listener<JSONObject>() {
             @Override
@@ -250,7 +259,7 @@ public class DatabaseSync
             this.authenticate();
         }
 
-        String url = m_url + endpoint + "?";
+        String url = getUrl() + endpoint + "?";
         url += args;
 
         if (!args.equals(""))
@@ -321,7 +330,7 @@ public class DatabaseSync
         if (issue == null || !"Pending".equals(issue.status)) return;
 
         String json = new Gson().toJson(issue);
-        String url = m_url + "issue_submission" + "?token=" + token;
+        String url = getUrl() + "issue_submission" + "?token=" + token;
 
         GsonObjectPost<Issue, IssueSubmissionResponse> request = new GsonObjectPost<Issue, IssueSubmissionResponse>(gson, url, issue, IssueSubmissionResponse.class, new Response.Listener<IssueSubmissionResponse>()
         {

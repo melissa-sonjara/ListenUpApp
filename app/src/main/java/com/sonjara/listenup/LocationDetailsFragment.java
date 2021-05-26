@@ -16,6 +16,8 @@ import android.widget.TextView;
 import com.sonjara.listenup.database.DatabaseHelper;
 import com.sonjara.listenup.database.LocationDetails;
 
+import org.osmdroid.util.GeoPoint;
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link LocationDetailsFragment#newInstance} factory method to
@@ -91,6 +93,7 @@ public class LocationDetailsFragment extends Fragment
             LocationDetailsFragmentArgs args = LocationDetailsFragmentArgs.fromBundle(bundle);
             DatabaseHelper db = DatabaseHelper.getInstance();
             LocationDetails location = db.getLocation(args.getLocationId());
+            setLocation(location);
 
             View v = getView();
             TextView title = v.findViewById(R.id.location_details_name);
@@ -167,6 +170,16 @@ public class LocationDetailsFragment extends Fragment
 
     void closeDetailsWindow()
     {
+        MainActivity activity = (MainActivity)getActivity();
+        LocationDetails location = getLocation();
+        if (!"".equals(location.latitude) && !"".equals(location.longitude))
+        {
+            double lat = Double.parseDouble(location.latitude);
+            double lng = Double.parseDouble(location.longitude);
+            activity.setMapCenter(new GeoPoint(lat, lng));
+            activity.setMapZoomLevel(15.0);
+        }
+
         LocationDetailsFragmentDirections.ActionHideLocationDetails action = LocationDetailsFragmentDirections.actionHideLocationDetails();
         Navigation.findNavController(getView()).navigate(action);
     }

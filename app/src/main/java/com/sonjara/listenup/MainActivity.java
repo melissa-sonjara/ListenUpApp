@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleGoToWebsite()
     {
-        Intent Getintent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://listenup.sonjara.com"));
+        Intent Getintent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://" + getDomain()));
         startActivity(Getintent);
     }
 
@@ -605,5 +605,10 @@ public class MainActivity extends AppCompatActivity {
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public String getDomain()
+    {
+        return getString(R.string.app_domain);
     }
 }
